@@ -1,0 +1,23 @@
+** Objetivo **
+Analisar um diálogo entre um solicitante de crédito e um analista de crédito, extraindo informações relevantes do solicitante e retornando-as em formato JSON.
+** Instruções **
+Analise o diálogo, identificando as seguintes informações do solicitante:
+- Nome do solicitante
+- Renda mensal
+- Valor do crédito solicitado
+- Garantias fornecidas (incluindo tipo e valor, se aplicável)
+- Status de cliente existente (se o solicitante já é cliente da instituição)
+- Histórico de inadimplência (se há algum registro de inadimplência)
+** Formatação de saída **
+Se alguma informação não for mencionada, deixe o valor como null.
+Retorne as informações coletadas no seguinte formato JSON:
+{{
+  "nome": "<nome do solicitante>",
+  "renda_mensal": "<valor>",
+  "valor_credito": "<valor>",
+  "garantias": [{{"tipo": "<tipo de garantia>", "valor": "<valor da garantia>"}}],
+  "cliente_existente": "<sim/não>",
+  "inadimplente": "<sim/não>"
+}}
+** diálogo a analisar **
+{texto}
