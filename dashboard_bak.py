@@ -1,55 +1,29 @@
-from globals import *
-
+import streamlit as st
 import sqlite3
-import pandas as pd                 # type: ignore
-import altair as alt                # type: ignore
-from fastapi import FastAPI, HTTPException # type: ignore
-from pydantic import BaseModel             # type: ignore
-from threading import Thread        # type: ignore
-import uvicorn                      # type: ignore
-
-
-app = FastAPI()
+import pandas as pd
+import altair as alt
+from globals import *
 
 st.set_page_config(page_title="Visualização de Dados", layout="wide")
 
-# Modelo para o registro que será enviado via API
-class Registro(BaseModel):
-    nome: str
-    risco: str
-    renda_mensal: float
-    credito_solicitado: float
-
 def carregar_dados():
-    """Carregar dados do banco de dados"""
+    """carregar dados do banco """
     with sqlite3.connect(BANCO_DADOS) as conn:
-        query = "SELECT * FROM registros"
+        query = "SELECT * FROM registros"  # Nome correto da tabela
         df = pd.read_sql_query(query, conn)
-    return df
+        return df
+    return None
 
-# Rota para adicionar um novo registro
-@app.post("/registros/")
-async def adicionar_registro(registro: Registro):
-    try:
-        with sqlite3.connect(BANCO_DADOS) as conn:
-            cursor = conn.cursor()
-            cursor.execute(
-                "INSERT INTO registros (nome, risco, renda_mensal, credito_solicitado) VALUES (?, ?, ?, ?)",
-                (registro.nome, registro.risco, registro.renda_mensal, registro.credito_solicitado)
-            )
-            conn.commit()
-        return {"mensagem": "Registro adicionado com sucesso"}
-    except Exception as e:
-        raise HTTPException(status_code=400, detail=f"Erro ao adicionar registro: {e}")
-
-# Função para exibir detalhes de um registro selecionado
+# Exibir detalhes de um registro selecionado
 def exibir_detalhes(linha):
+    """ exibir detalhes """
     st.subheader("Detalhes do Registro")
     for coluna, valor in linha.items():
         st.write(f"**{coluna}**: {valor}")
 
-# Função principal para exibição no Streamlit
+# Interface principal
 def main():
+    """ principal """
     st.title("Sistema de Concessão de Benefícios da Mútua")
 
     # Carregar os dados do banco
@@ -58,19 +32,22 @@ def main():
     # Filtrar as colunas relevantes 
     df_filtrado = df[["nome", "risco", "renda_mensal","credito_solicitado"]]
 
-    # Função de coloração das linhas
+    # Destacar toda a linha com situação "crítica" em vermelho
     def colorir_linhas(row):
         if row["risco"] == "alto":
             return ["background-color: red; color: white;" for _ in row]
-        elif row["risco"] == "moderado":
+        if row["risco"] == "moderado":
             return ["background-color: yellow; color: black;" for _ in row]
-        elif row["risco"] == "baixo":
+        if row["risco"] == "baixo":
             return ["background-color: green; color: black;" for _ in row]
+        
         return [""] * len(row)
 
     # Aplicar estilos de coloração nas linhas
     st.subheader("Tabela de Dados")
     styled_df = df_filtrado.style.apply(colorir_linhas, axis=1)
+
+    # Usar `st.table()` para garantir exibição completa dos dados filtrados
     st.table(styled_df)
 
     # Permitir seleção de um registro para ver detalhes
@@ -97,12 +74,5 @@ def main():
 
     st.altair_chart(grafico)
 
-# Função para rodar o FastAPI em um thread separado
-def start_api():
-    uvicorn.run(app, host="0.0.0.0", port=8000)
-
-# Rodar a API e o Streamlit simultaneamente
 if __name__ == "__main__":
-    api_thread = Thread(target=start_api, daemon=True)
-    api_thread.start()
     main()

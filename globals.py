@@ -22,16 +22,10 @@ from groq import Groq                           # type: ignore
 logger = logging.getLogger("__name__")
 logger.setLevel(logging.DEBUG)  # Define o nível de log
 
-# Configuração do handler para salvar logs em um arquivo
-file_handler = logging.FileHandler("logs.txt")
-file_handler.setLevel(logging.DEBUG)
-
 # Formato de log
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-file_handler.setFormatter(formatter)
 
 # Adicionando o handler ao logger
-logger.addHandler(file_handler)
 logi = lambda message: logger.info(message)
 logw = lambda message: logger.warning(message)
 logd = lambda message: logger.debug(message)
